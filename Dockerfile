@@ -1,15 +1,14 @@
-FROM eclipse-temurin:17-jdk
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 WORKDIR /app
-
 COPY . .
 
-# ✅ FIX: give execute permission to mvnw
-RUN chmod +x mvnw
+RUN mvn clean package -DskipTests
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
-
-CMD ["java", "-jar", "target/chessbackend-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "app.jar"]
